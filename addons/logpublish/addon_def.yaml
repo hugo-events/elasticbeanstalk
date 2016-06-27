@@ -1,0 +1,37 @@
+
+name: logpublish
+version: 1.0
+description: |
+    AWS Elastic Beanstalk Log Publication Addon.
+
+hooks:        
+    CMD-Startup:
+        after:
+            - name: ConfigLogRotation
+              type: addon-hook
+              value: config
+
+    CMD-SelfStartup:
+        after:
+            - name: ConfigLogRotation
+              type: addon-hook
+              value: config
+
+    CMD-AppDeploy:
+        after:
+            - name: ConfigLogRotation
+              type: addon-hook
+              value: config
+
+    CMD-ConfigDeploy:
+        after:
+            - name: ConfigLogRotation
+              type: addon-hook
+              value: config
+
+    CMD-RestartAppServer:
+        after:
+            - name: ConfigLogRotation
+              type: addon-hook
+              value: config
+

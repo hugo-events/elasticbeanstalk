@@ -1,0 +1,6 @@
+#!/bin/sh
+
+if [ -f "/var/run/aws-sqsd/default.pid" ] && ! /etc/init.d/aws-sqsd status >/dev/null 2>&1; then
+	logger -t aws-sqsd-monitor "restarting aws-sqsd..."
+	/etc/init.d/aws-sqsd restart
+fi

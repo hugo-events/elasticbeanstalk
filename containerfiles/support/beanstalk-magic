@@ -1,0 +1,4 @@
+# Magic file for app bundle type detection in Beanstalk hooks
+
+0    string    PK\003\004    Zip application bundle
+!:mime  application/zip

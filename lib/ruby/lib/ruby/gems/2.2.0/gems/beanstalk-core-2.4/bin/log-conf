@@ -1,0 +1,111 @@
+#!/opt/elasticbeanstalk/lib/ruby/bin/ruby
+
+#==============================================================================
+# Copyright 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Amazon Software License (the "License"). You may not use
+# this file except in compliance with the License. A copy of the License is
+# located at
+#
+#       https://aws.amazon.com/asl/
+#
+# or in the "license" file accompanying this file. This file is distributed on
+# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or
+# implied. See the License for the specific language governing permissions
+# and limitations under the License.
+#==============================================================================
+
+require 'optparse'
+
+require 'elasticbeanstalk/exceptions'
+require 'elasticbeanstalk/log-conf-manager'
+
+
+def generate_log_conf (options)
+    log_patterns = options[:log_patterns].split(',')
+
+    log_types = ['all']
+    if options[:log_types]
+        log_types = options[:log_types].split(',')
+    end
+
+    log_types = log_types.collect { |type| type.to_sym }
+
+    manager = ElasticBeanstalk::LogConfManager.new(options[:conf_name])
+
+    log_patterns.each { |pattern| manager.add(pattern, types: log_types) }
+
+    if options[:rotation_file]
+        manager.read_log_rotation_settings(options[:rotation_file])
+    end
+
+    #Allowed values are duration, size, rotate, dateformat
+    if options[:rotation_settings]
+        rotation_settings = options[:rotation_settings].split(',')
+        rotation_settings.each do |setting|
+            parts = setting.split('=', 2)
+            if parts[0] == 'frequency'
+                manager.log_rotate_hash[parts[1].to_sym] = true
+            elsif parts[0] == 'rotate' || parts[0] == 'size'
+                manager.log_rotate_hash[parts[0].to_sym] = parts[1]
+            end
+        end
+    end
+
+    manager.write
+end
+
+
+options = {}
+
+option_parser = OptionParser.new do |opts|
+    opts.banner = "Usage: log-conf [OPTIONS]"
+    opts.separator("")
+    opts.separator("Options")
+
+    opts.on("-n", "--conf-name CONF_NAME", "Name of configuration.") do |conf_name|
+        options[:conf_name] = conf_name
+    end
+
+    opts.on("-l", "--log-patterns LOG_PATTERNS", "Log file name patterns, in comma separated list.") do |log_patterns|
+        options[:log_patterns] = log_patterns
+    end
+
+    opts.on("-t", "--log-types LOG_TYPES", "Configuration type, in comma separated list. Options are: all, taillogs, bundlelogs, publishlogs. Default is all.") do |log_types|
+        options[:log_types] = log_types
+    end
+
+    opts.on("-f", "--rotation-conf-file ROTATION_FILE", "Speicify logrotate settings through file.") do |rotation_file|
+        options[:rotation_file] = rotation_file
+    end
+
+    opts.on("-r", "--rotation-settings ROTATION_SETTINGS", "Override default logrotate setting, in comma separated list. Options: frequency, rotate, size.") do |rotation_settings|
+        options[:rotation_settings] = rotation_settings
+    end
+        
+    opts.on("-h", "--help", "Help") do
+        puts option_parser
+        exit
+    end
+
+end
+
+option_parser.parse!
+
+if options[:rotation_file] && options[:rotation_settings]
+    abort(%[Cannot specify both rotation-conf-file and rotation-settings.])
+end
+
+if options[:conf_name].nil?
+    abort(%[conf-name is required.\n\n#{option_parser}])
+end
+
+if options[:log_patterns].nil?
+    abort(%[log-patterns is required.\n\n#{option_parser}])
+end
+
+begin
+    generate_log_conf(options)
+rescue ElasticBeanstalk::BeanstalkRuntimeError => e
+    abort(e.message)
+end

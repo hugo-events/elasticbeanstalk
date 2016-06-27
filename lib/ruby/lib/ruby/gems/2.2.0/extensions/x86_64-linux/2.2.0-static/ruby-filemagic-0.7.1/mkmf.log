@@ -1,0 +1,196 @@
+have_library: checking for main() in -lgnurx... -------------------- no
+
+"gcc -o conftest -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I. -I/opt/local/include -I/usr/local/include -I/usr/include     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat conftest.c  -L/opt/local/lib -Wl,-R/opt/local/lib -L/usr/local/lib -Wl,-R/usr/local/lib -L/usr/lib -Wl,-R/usr/lib -L. -L/opt/elasticbeanstalk/lib/ruby/lib -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L. -fstack-protector -rdynamic -Wl,-export-dynamic     -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L/opt/elasticbeanstalk/lib/ruby/lib -lruby-static  -lpthread -ldl -lcrypt -lm   -lc"
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return 0;
+6: }
+/* end */
+
+"gcc -o conftest -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I. -I/opt/local/include -I/usr/local/include -I/usr/include     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat conftest.c  -L/opt/local/lib -Wl,-R/opt/local/lib -L/usr/local/lib -Wl,-R/usr/local/lib -L/usr/lib -Wl,-R/usr/lib -L. -L/opt/elasticbeanstalk/lib/ruby/lib -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L. -fstack-protector -rdynamic -Wl,-export-dynamic     -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L/opt/elasticbeanstalk/lib/ruby/lib -lruby-static -lgnurx  -lpthread -ldl -lcrypt -lm   -lc"
+conftest.c: In function ‘t’:
+conftest.c:13:32: warning: variable ‘p’ set but not used [-Wunused-but-set-variable]
+ int t(void) { void ((*volatile p)()); p = (void ((*)()))main; return 0; }
+                                ^
+/usr/bin/ld: cannot find -lgnurx
+collect2: error: ld returned 1 exit status
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: /*top*/
+ 4: extern int t(void);
+ 5: int main(int argc, char **argv)
+ 6: {
+ 7:   if (argc > 1000000) {
+ 8:     printf("%p", &t);
+ 9:   }
+10: 
+11:   return 0;
+12: }
+13: int t(void) { void ((*volatile p)()); p = (void ((*)()))main; return 0; }
+/* end */
+
+"gcc -o conftest -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I. -I/opt/local/include -I/usr/local/include -I/usr/include     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat conftest.c  -L/opt/local/lib -Wl,-R/opt/local/lib -L/usr/local/lib -Wl,-R/usr/local/lib -L/usr/lib -Wl,-R/usr/lib -L. -L/opt/elasticbeanstalk/lib/ruby/lib -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L. -fstack-protector -rdynamic -Wl,-export-dynamic     -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L/opt/elasticbeanstalk/lib/ruby/lib -lruby-static -lgnurx  -lpthread -ldl -lcrypt -lm   -lc"
+conftest.c: In function ‘t’:
+conftest.c:13:1: error: too few arguments to function ‘main’
+ int t(void) { main(); return 0; }
+ ^
+conftest.c:5:5: note: declared here
+ int main(int argc, char **argv)
+     ^
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: /*top*/
+ 4: extern int t(void);
+ 5: int main(int argc, char **argv)
+ 6: {
+ 7:   if (argc > 1000000) {
+ 8:     printf("%p", &t);
+ 9:   }
+10: 
+11:   return 0;
+12: }
+13: int t(void) { main(); return 0; }
+/* end */
+
+--------------------
+
+have_library: checking for magic_open() in -lmagic... -------------------- yes
+
+"gcc -o conftest -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I. -I/opt/local/include -I/usr/local/include -I/usr/include     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat conftest.c  -L/opt/local/lib -Wl,-R/opt/local/lib -L/usr/local/lib -Wl,-R/usr/local/lib -L/usr/lib -Wl,-R/usr/lib -L. -L/opt/elasticbeanstalk/lib/ruby/lib -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L. -fstack-protector -rdynamic -Wl,-export-dynamic     -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L/opt/elasticbeanstalk/lib/ruby/lib -lruby-static -lmagic  -lpthread -ldl -lcrypt -lm   -lc"
+conftest.c: In function ‘t’:
+conftest.c:13:57: error: ‘magic_open’ undeclared (first use in this function)
+ int t(void) { void ((*volatile p)()); p = (void ((*)()))magic_open; return 0; }
+                                                         ^
+conftest.c:13:57: note: each undeclared identifier is reported only once for each function it appears in
+conftest.c:13:32: warning: variable ‘p’ set but not used [-Wunused-but-set-variable]
+ int t(void) { void ((*volatile p)()); p = (void ((*)()))magic_open; return 0; }
+                                ^
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: /*top*/
+ 4: extern int t(void);
+ 5: int main(int argc, char **argv)
+ 6: {
+ 7:   if (argc > 1000000) {
+ 8:     printf("%p", &t);
+ 9:   }
+10: 
+11:   return 0;
+12: }
+13: int t(void) { void ((*volatile p)()); p = (void ((*)()))magic_open; return 0; }
+/* end */
+
+"gcc -o conftest -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I. -I/opt/local/include -I/usr/local/include -I/usr/include     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat conftest.c  -L/opt/local/lib -Wl,-R/opt/local/lib -L/usr/local/lib -Wl,-R/usr/local/lib -L/usr/lib -Wl,-R/usr/lib -L. -L/opt/elasticbeanstalk/lib/ruby/lib -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L. -fstack-protector -rdynamic -Wl,-export-dynamic     -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L/opt/elasticbeanstalk/lib/ruby/lib -lruby-static -lmagic  -lpthread -ldl -lcrypt -lm   -lc"
+conftest.c: In function ‘t’:
+conftest.c:13:1: warning: implicit declaration of function ‘magic_open’ [-Wimplicit-function-declaration]
+ int t(void) { magic_open(); return 0; }
+ ^
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: /*top*/
+ 4: extern int t(void);
+ 5: int main(int argc, char **argv)
+ 6: {
+ 7:   if (argc > 1000000) {
+ 8:     printf("%p", &t);
+ 9:   }
+10: 
+11:   return 0;
+12: }
+13: int t(void) { magic_open(); return 0; }
+/* end */
+
+--------------------
+
+have_header: checking for magic.h... -------------------- yes
+
+"gcc -E -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I. -I/opt/local/include -I/usr/local/include -I/usr/include     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat  conftest.c -o conftest.i"
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: #include <magic.h>
+/* end */
+
+--------------------
+
+have_func: checking for magic_version()... -------------------- yes
+
+"gcc -o conftest -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I. -I/opt/local/include -I/usr/local/include -I/usr/include     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat conftest.c  -L/opt/local/lib -Wl,-R/opt/local/lib -L/usr/local/lib -Wl,-R/usr/local/lib -L/usr/lib -Wl,-R/usr/lib -L. -L/opt/elasticbeanstalk/lib/ruby/lib -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L. -fstack-protector -rdynamic -Wl,-export-dynamic    -lmagic  -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L/opt/elasticbeanstalk/lib/ruby/lib -lruby-static -lmagic  -lpthread -ldl -lcrypt -lm   -lc"
+conftest.c: In function ‘t’:
+conftest.c:13:57: error: ‘magic_version’ undeclared (first use in this function)
+ int t(void) { void ((*volatile p)()); p = (void ((*)()))magic_version; return 0; }
+                                                         ^
+conftest.c:13:57: note: each undeclared identifier is reported only once for each function it appears in
+conftest.c:13:32: warning: variable ‘p’ set but not used [-Wunused-but-set-variable]
+ int t(void) { void ((*volatile p)()); p = (void ((*)()))magic_version; return 0; }
+                                ^
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: /*top*/
+ 4: extern int t(void);
+ 5: int main(int argc, char **argv)
+ 6: {
+ 7:   if (argc > 1000000) {
+ 8:     printf("%p", &t);
+ 9:   }
+10: 
+11:   return 0;
+12: }
+13: int t(void) { void ((*volatile p)()); p = (void ((*)()))magic_version; return 0; }
+/* end */
+
+"gcc -o conftest -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I. -I/opt/local/include -I/usr/local/include -I/usr/include     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat conftest.c  -L/opt/local/lib -Wl,-R/opt/local/lib -L/usr/local/lib -Wl,-R/usr/local/lib -L/usr/lib -Wl,-R/usr/lib -L. -L/opt/elasticbeanstalk/lib/ruby/lib -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L. -fstack-protector -rdynamic -Wl,-export-dynamic    -lmagic  -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L/opt/elasticbeanstalk/lib/ruby/lib -lruby-static -lmagic  -lpthread -ldl -lcrypt -lm   -lc"
+conftest.c: In function ‘t’:
+conftest.c:13:1: warning: implicit declaration of function ‘magic_version’ [-Wimplicit-function-declaration]
+ int t(void) { magic_version(); return 0; }
+ ^
+checked program was:
+/* begin */
+ 1: #include "ruby.h"
+ 2: 
+ 3: /*top*/
+ 4: extern int t(void);
+ 5: int main(int argc, char **argv)
+ 6: {
+ 7:   if (argc > 1000000) {
+ 8:     printf("%p", &t);
+ 9:   }
+10: 
+11:   return 0;
+12: }
+13: int t(void) { magic_version(); return 0; }
+/* end */
+
+--------------------
+
+have_header: checking for file/patchlevel.h... -------------------- no
+
+"gcc -E -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I. -I/opt/local/include -I/usr/local/include -I/usr/include     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat  conftest.c -o conftest.i"
+conftest.c:3:29: fatal error: file/patchlevel.h: No such file or directory
+ #include <file/patchlevel.h>
+                             ^
+compilation terminated.
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: #include <file/patchlevel.h>
+/* end */
+
+--------------------
+

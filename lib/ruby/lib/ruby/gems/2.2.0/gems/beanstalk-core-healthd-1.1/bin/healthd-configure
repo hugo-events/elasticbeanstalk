@@ -1,0 +1,36 @@
+#!/opt/elasticbeanstalk/lib/ruby/bin/ruby
+
+require 'elasticbeanstalk/healthd'
+require 'optparse'
+
+exit(0) unless ElasticBeanstalk::Healthd.enabled?
+
+options = {}
+option_parser = OptionParser.new do |opts|
+    opts.banner = 'usage: healthd-configure [options]'
+
+    opts.on('-l', '--appstat-log-path application statistics log path', 'path to log file containing application statistics') do |o|
+        options[:appstat_log_path] = o
+    end
+
+    opts.on('-u', '--appstat-unit time unit', 'unit of time used for response time in application statistics') do |o|
+        options[:appstat_unit] = o
+    end
+
+    opts.on('-t', "--appstat-timestamp-on timestamp on [''|'completion'|'arrival']", "whether timestamp is logged on completion of request / arrival of request") do |o|
+        options[:appstat_timestamp_on] = o
+    end
+end
+
+begin
+    option_parser.parse!
+
+    exit(0) if options.empty?
+
+    ElasticBeanstalk::Healthd.configure :appstat_log_path       => options[:appstat_log_path],
+                                        :appstat_unit           => options[:appstat_unit],
+                                        :appstat_timestamp_on   => options[:appstat_timestamp_on]
+rescue OptionParser::InvalidArgument
+    puts option_parser.help
+    exit 1
+end

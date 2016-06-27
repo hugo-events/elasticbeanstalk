@@ -1,0 +1,59 @@
+#!/opt/elasticbeanstalk/lib/ruby/bin/ruby
+
+require 'elasticbeanstalk/healthd'
+require 'optparse'
+
+exit(0) unless ElasticBeanstalk::Healthd.enabled?
+
+options = {}
+option_parser = OptionParser.new do |opts|
+    opts.banner = 'usage: healthd-track-pidfile [options]'
+
+    opts.on('-n', '--name pidfile_name', 'pidfile name') do |o|
+        options[:pidfile_name] = o
+    end
+
+    opts.on('-l', '--location pidfile location', 'location of pidfile') do |o|
+        options[:pidfile_location] = o
+    end
+
+    opts.on('-p', '--proxy proxy', 'proxy to track [nginx, httpd]') do |o|
+        options[:proxy_server] = o
+    end
+end
+
+begin
+    option_parser.parse!
+
+    if (options[:pidfile_name] || options[:pidfile_location]) && options[:proxy_server]
+        puts "Cannot use proxy option when specifying pidfile name and location"
+        raise OptionParser::InvalidArgument.new
+    end
+
+    if options[:proxy_server]
+        pidfile_name = "proxy"
+
+        case options[:proxy_server]
+        when "nginx"
+            pidfile_location = "/var/run/nginx.pid"
+        when "httpd"
+            pidfile_location = "/var/run/httpd/httpd.pid"
+        else
+            puts "Unsupported proxy server: #{options[:proxy_server]}"
+            raise OptionParser::InvalidArgument.new
+        end
+    else
+        unless options[:pidfile_name] && options[:pidfile_location]
+            puts %[Must specify both pidfile name and location]
+            raise OptionParser::InvalidArgument.new
+        end
+
+        pidfile_name = options[:pidfile_name]
+        pidfile_location = options[:pidfile_location]
+    end
+
+    ElasticBeanstalk::Healthd.track_pidfile :name => pidfile_name, :pidfile => pidfile_location
+rescue OptionParser::InvalidArgument => e
+    puts option_parser.help
+    exit 1
+end

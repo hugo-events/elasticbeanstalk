@@ -1,0 +1,4 @@
+#!/bin/bash -e
+
+source /opt/elasticbeanstalk/lib/ruby/profile.sh
+/opt/elasticbeanstalk/lib/ruby/bin/log-conf "$@"

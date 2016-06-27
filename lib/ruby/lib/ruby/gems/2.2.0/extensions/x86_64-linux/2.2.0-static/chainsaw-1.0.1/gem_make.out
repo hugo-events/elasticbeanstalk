@@ -1,0 +1,12 @@
+/opt/elasticbeanstalk/lib/ruby/bin/ruby -r ./siteconf20160503-14193-1rkjo8i.rb extconf.rb
+enabling production flags
+creating Makefile
+
+make "DESTDIR=" clean
+
+make "DESTDIR="
+compiling chainsaw.c
+linking shared-object chainsaw.so
+
+make "DESTDIR=" install
+/usr/bin/install -c -m 0755 chainsaw.so ./.gem.20160503-14193-1lohr39

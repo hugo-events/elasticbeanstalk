@@ -1,0 +1,11 @@
+#!/opt/elasticbeanstalk/lib/ruby/bin/ruby
+
+require 'executor'
+require 'elasticbeanstalk/healthd'
+
+begin
+    Executor::Exec.sh("initctl start healthd || initctl restart healthd") if ElasticBeanstalk::Healthd.enabled?
+rescue Executor::NonZeroExitStatus => e
+    puts "Could not restart healthd. Error: #{e.message}"
+    exit e.exit_code
+end

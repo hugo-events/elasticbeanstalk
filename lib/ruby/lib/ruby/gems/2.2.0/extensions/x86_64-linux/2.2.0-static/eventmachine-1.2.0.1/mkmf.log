@@ -1,0 +1,11 @@
+"gcc -o conftest -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/x86_64-linux -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0/ruby/backward -I/opt/elasticbeanstalk/lib/ruby/include/ruby-2.2.0 -I.     -O3 -fno-fast-math -ggdb3 -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wunused-variable -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wno-packed-bitfield-compat conftest.c  -L. -L/opt/elasticbeanstalk/lib/ruby/lib -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L. -fstack-protector -rdynamic -Wl,-export-dynamic     -Wl,-R/opt/elasticbeanstalk/lib/ruby/lib -L/opt/elasticbeanstalk/lib/ruby/lib -lruby-static  -lpthread -ldl -lcrypt -lm   -lc"
+checked program was:
+/* begin */
+1: #include "ruby.h"
+2: 
+3: int main(int argc, char **argv)
+4: {
+5:   return 0;
+6: }
+/* end */
+

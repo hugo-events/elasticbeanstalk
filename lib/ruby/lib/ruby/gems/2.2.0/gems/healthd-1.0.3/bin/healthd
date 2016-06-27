@@ -1,0 +1,140 @@
+#!/usr/bin/env ruby
+
+require 'pathname'
+require 'ostruct'
+require 'optparse'
+require 'bundler'
+require 'healthd/daemon/version'
+require 'healthd/daemon/exceptions'
+
+module HealthdServer
+    def run(*options)
+        Healthd::Daemon.init
+        super *options
+    end
+end
+
+begin
+    base_dir = Pathname(__dir__).parent
+    Dir.chdir base_dir do
+        Bundler.setup if File.exists? 'Gemfile'
+
+        require 'healthd/daemon/options'
+        opt = OptionParser.new do |opts|
+            opts.banner = "usage: healthd [options]"
+
+            opts.on '-v', '--verbose', 'verbose mode' do
+                Healthd::Daemon::Options.verbose = true
+            end
+
+            opts.on '-q', '--quiet', 'quiet mode' do
+                Healthd::Daemon::Options.quiet = true
+                Healthd::Daemon::Options.verbose = false
+            end
+
+            opts.on '-d', '--debug', 'debug mode' do
+                Healthd::Daemon::Options.debug = true
+            end
+
+            opts.on '-f', '--[no-]log-to-file', 'force logging to file' do |i|
+                Healthd::Daemon::Options.log_to_file = i
+            end
+
+            opts.on '-m', '--[no-]ec2-metadata', 'retrieve EC2 metadata during initialization' do |i|
+                unless i
+                    Healthd::Daemon::Options.instance_id = 'n/a'
+                    Healthd::Daemon::Options.availability_zone = 'us-east-1a'
+                    Healthd::Daemon::Options.region = 'us-east-1'
+                    Healthd::Daemon::Options.pending_time = Time.now.utc.iso8601
+                end
+            end
+
+            opts.on '-e', '--endpoint uri', 'endpoint URI' do |i|
+                Healthd::Daemon::Options.endpoint = i
+            end
+
+            opts.on '-D', '--[no-]daemonize', 'daemonize the process' do |i|
+                Healthd::Daemon::Options.daemonize = i
+            end
+
+            opts.on '-g', '--group-id id', 'group id' do |i|
+                Healthd::Daemon::Options.group_id = i
+            end
+
+            opts.on '-V', '--version', 'show version' do
+                puts %[healthd-daemon #{Healthd::Daemon::VERSION}]
+                exit 0
+            end
+
+            opts.on '-h', '--help', 'display this screen' do
+                puts opts
+                exit 0
+            end
+        end
+
+        begin
+            opt.parse!
+        rescue OptionParser::InvalidOption => e
+            option = e.args.first.to_s[/-*(.*)/, 1]
+            puts "error: illegal option -- #{option}"
+            puts opt.help
+            exit 1
+        rescue OptionParser::MissingArgument => e
+            puts "error: #{e.message}"
+            exit 1
+        end
+
+        if ARGV.any?
+            puts "error: illegal argument -- #{ARGV.first}"
+            puts opt.help
+            exit 1
+        end
+
+        require 'healthd/daemon'
+        require 'puma'
+        require 'puma/cli'
+
+        Puma::Server.class_eval do
+            prepend HealthdServer
+        end
+
+        Puma::Runner.class_eval do
+            def log(str)
+                Healthd::Daemon::Logger.debug str
+            end
+
+            def error(str)
+                Healthd::Daemon::Logger.error str
+            end
+        end
+
+        cli = Puma::CLI.new []
+        cli.run
+    end
+rescue SystemExit
+rescue Healthd::Exceptions::FatalError, Errno::ENOENT, Errno::EACCES => e
+    if defined?(Healthd::Daemon::Logger) && defined?(Healthd::Daemon::Options) && Healthd::Daemon::Options.log_device?
+        Healthd::Daemon::Logger.fatal e.message
+    end
+
+    puts "error: #{e.message}"
+    exit 1
+rescue Exception => e
+    if defined?(Healthd::Daemon::Logger) && defined?(Healthd::Daemon::Options) && Healthd::Daemon::Options.log_device?
+        first_trace = e.backtrace.first
+        backtrace = e.backtrace.drop(1).collect { |i| "\tfrom #{i}"}.join("\n")
+        message = %[#{first_trace}: #{e.message} (#{e.class})\n#{backtrace}]
+
+        while e.cause
+            first_trace = e.cause.backtrace.first
+            backtrace = e.cause.backtrace.drop(1).collect { |i| "\tfrom #{i}"}.join("\n")
+            message = %[#{message}\ncaused by:\n#{first_trace}: #{e.cause.message} (#{e.cause.class})\n#{backtrace}]
+
+            e = e.cause
+        end
+
+        Healthd::Daemon::Logger.fatal message
+    end
+
+    raise
+end

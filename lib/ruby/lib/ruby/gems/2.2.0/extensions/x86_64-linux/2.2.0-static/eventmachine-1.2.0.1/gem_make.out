@@ -1,0 +1,12 @@
+/opt/elasticbeanstalk/lib/ruby/bin/ruby -r ./siteconf20160503-14193-f4n7y0.rb extconf.rb
+creating Makefile
+
+make "DESTDIR=" clean
+
+make "DESTDIR="
+compiling rubymain.cpp
+compiling mapper.cpp
+linking shared-object fastfilereaderext.so
+
+make "DESTDIR=" install
+/usr/bin/install -c -m 0755 fastfilereaderext.so ./.gem.20160503-14193-1qayy9p

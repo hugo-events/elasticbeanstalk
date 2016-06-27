@@ -1,0 +1,89 @@
+#!/opt/elasticbeanstalk/lib/ruby/bin/ruby
+
+#==============================================================================
+# Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Amazon Software License (the "License"). You may not use
+# this file except in compliance with the License. A copy of the License is
+# located at
+#
+#       https://aws.amazon.com/asl/
+#
+# or in the "license" file accompanying this file. This file is distributed on
+# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or
+# implied. See the License for the specific language governing permissions
+# and limitations under the License.
+#==============================================================================
+
+require 'fileutils'
+require 'logger'
+require 'json'
+require 'optparse'
+
+require 'elasticbeanstalk/application_version_downloader'
+require 'elasticbeanstalk/command'
+require 'elasticbeanstalk/exceptions'
+require 'elasticbeanstalk/manifest'
+require 'elasticbeanstalk/utils'
+
+
+def download_source_bundle(opts = {})
+    opts = {
+        path: nil,
+        path_is_dir: false,
+        refresh_manifest: false
+    }.merge opts
+
+    path = opts[:path]
+    path_is_dir = opts[:path_is_dir]
+    refresh_manifest = opts[:refresh_manifest]
+
+    logger = Logger.new($stderr)
+    logger.formatter = ElasticBeanstalk::Utils.logger_formatter
+
+    path = ElasticBeanstalk::Command.sourcebundle_file unless path
+    FileUtils.rm_rf path
+
+    dir_path = path_is_dir ? path : File.dirname(path)
+    FileUtils.mkdir_p dir_path
+
+    logger.info "Application version will be saved to #{dir_path}."
+
+    if refresh_manifest
+        manifest = ElasticBeanstalk::Manifest.update_cache(logger: logger)
+    else
+        manifest = ElasticBeanstalk::Manifest.load_cache(logger:logger)
+    end
+    logger.info("Using manifest cache with deployment ID #{manifest.deployment_id} and serial #{manifest.serial}.") if manifest
+
+    app_version_downloader = ElasticBeanstalk::ApplicationVersionDownloader.new(logger: logger, manifest: manifest)
+    app_version_downloader.download_to(destination: path)
+rescue => e
+    msg = "Application version download failed: #{e.message}"
+    logger.error(msg)
+    fail e
+end
+
+def main
+    options = {}
+
+    OptionParser.new do |opts|
+        opts.banner = "Usage: #{$0} [options]"
+
+        opts.on("-p", "--path <path>") do |path|
+            options[:path] = path
+        end
+
+        opts.on("-d", "--directory") do |dir|
+            options[:path_is_dir] = dir
+        end
+
+        opts.on("-r", "--[no-]refresh") do |refresh|
+            options[:refresh_manifest] = refresh
+        end
+    end.parse!
+
+    download_source_bundle options
+end
+
+main

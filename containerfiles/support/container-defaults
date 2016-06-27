@@ -1,0 +1,19 @@
+#!/bin/env ruby
+
+require 'json'
+
+leader_env_var = 'EB_IS_COMMAND_LEADER'
+
+env_vars = JSON.parse(`/opt/elasticbeanstalk/bin/get-config environment`)
+app_staging_dir = `/opt/elasticbeanstalk/bin/get-config container -k app_staging_dir`
+app_staging_dir = '/var/app/staging' if app_staging_dir.length == 0
+
+if ENV[leader_env_var]
+    env_vars[leader_env_var] = ENV[leader_env_var]
+end
+
+env_vars['HOME'] = '/root'
+env_vars['PATH'] = '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin'
+
+response = { "env" => env_vars, "cwd" => app_staging_dir }
+print response.to_json

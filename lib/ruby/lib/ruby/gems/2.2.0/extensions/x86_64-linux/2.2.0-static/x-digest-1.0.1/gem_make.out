@@ -1,0 +1,224 @@
+/opt/elasticbeanstalk/lib/ruby/bin/ruby -r ./siteconf20160503-14193-1rahd8g.rb extconf.rb
+enabling production flags
+Using built-in specs.
+COLLECT_GCC=gcc
+COLLECT_LTO_WRAPPER=/usr/libexec/gcc/x86_64-amazon-linux/4.8.3/lto-wrapper
+Target: x86_64-amazon-linux
+Configured with: ../configure --prefix=/usr --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=http://bugzilla.redhat.com/bugzilla --enable-bootstrap --enable-shared --enable-threads=posix --enable-checking=release --with-system-zlib --enable-__cxa_atexit --disable-libunwind-exceptions --enable-gnu-unique-object --enable-linker-build-id --with-linker-hash-style=gnu --enable-languages=c,c++,fortran,ada,lto --enable-plugin --enable-initfini-array --disable-libgcj --with-isl=/builddir/build/BUILD/gcc-4.8.3-20140911/obj-x86_64-amazon-linux/isl-install --with-cloog=/builddir/build/BUILD/gcc-4.8.3-20140911/obj-x86_64-amazon-linux/cloog-install --enable-gnu-indirect-function --with-tune=generic --with-arch_32=x86-64 --build=x86_64-amazon-linux
+Thread model: posix
+gcc version 4.8.3 20140911 (Red Hat 4.8.3-9) (GCC) 
+
+creating Makefile
+
+make "DESTDIR=" clean
+
+make "DESTDIR="
+compiling data.c
+data.c: In function ‘data_initialize’:
+data.c:15:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     VALUE rb_max_size;
+     ^
+data.c:18:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long max_size = rb_fix2int(rb_max_size);
+     ^
+data.c:25:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     VALUE *rb_pages = (VALUE*)malloc(sizeof(VALUE)*max_size);
+     ^
+data.c: In function ‘data_mark’:
+data.c:57:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Data *data = (Data*)ptr;
+     ^
+data.c: In function ‘data_aref’:
+data.c:84:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+data.c: In function ‘data_aset’:
+data.c:108:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+data.c:113:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Page *page;
+     ^
+data.c: In function ‘data_insert’:
+data.c:150:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+data.c:155:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Page *page;
+     ^
+data.c: In function ‘data_push’:
+data.c:190:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Data *data;
+     ^
+data.c:193:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Page *page;
+     ^
+data.c: In function ‘data_delete_at_m’:
+data.c:232:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+compiling xdigest.c
+xdigest.c: In function ‘digest_initialize’:
+xdigest.c:28:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     VALUE rb_data = rb_iv_get(rb_digest, "@data");
+     ^
+xdigest.c:35:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     ID to_reverse_enum_method = rb_intern("to_reverse_enum");
+     ^
+xdigest.c:39:2: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+  Digest *digest;
+  ^
+xdigest.c:42:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Data *data;
+     ^
+xdigest.c:45:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     VALUE rb_compression = rb_iv_get(rb_digest, "@compression");
+     ^
+xdigest.c: In function ‘digest_mark’:
+xdigest.c:69:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Digest *digest = (Digest*)ptr;
+     ^
+xdigest.c: In function ‘digest_all_before’:
+xdigest.c:105:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Centroids centroids_last = digest_centroids_for_page(data_size - 1, digest);
+     ^
+xdigest.c: In function ‘digest_floor’:
+xdigest.c:135:9: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+         Centroids centroids = digest_centroids_for_page(z.page, digest);
+         ^
+xdigest.c: In function ‘digest_increment’:
+xdigest.c:171:9: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+         double active = (digest_centroids_for_page(i, digest)).active;
+         ^
+xdigest.c: In function ‘digest_add’:
+xdigest.c:198:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     double value;
+     ^
+xdigest.c:211:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long weight = 1;
+     ^
+xdigest.c:223:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Digest *digest;
+     ^
+xdigest.c:226:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Index start = digest_floor(value, *digest);
+     ^
+xdigest.c:248:9: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+         long i = 0;
+         ^
+xdigest.c:256:13: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+             double z = fabsl(digest_centroids_for_page(neighbor.page, *digest).values[neighbor.element] - value);
+             ^
+xdigest.c:289:17: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+                 long count = digest_count(neighbor, *digest);
+                 ^
+xdigest.c:316:17: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+                 Centroids closest_centroids = digest_centroids_for_page(closest.page, *digest);
+                 ^
+xdigest.c:334:21: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+                     Centroids closest_centroids = digest_centroids_for_page(closest.page, *digest);
+                     ^
+xdigest.c: In function ‘digest_set_total_weight’:
+xdigest.c:376:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long value = rb_fix2int(rb_value);
+     ^
+xdigest.c: In function ‘digest_set_centroid_count’:
+xdigest.c:408:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long value = rb_fix2int(rb_value);
+     ^
+xdigest.c: In function ‘digest_build_index’:
+xdigest.c:438:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long data_size = digest.data->size;
+     ^
+xdigest.c: In function ‘digest_next_index’:
+xdigest.c:475:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long data_size = digest.data->size;
+     ^
+xdigest.c:508:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Index nextIndex = digest_duplicate_index(*currentIndex);
+     ^
+compiling page.c
+page.c: In function ‘page_initialize’:
+page.c:16:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     VALUE rb_centroids;
+     ^
+page.c:20:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Centroids *centroids;
+     ^
+page.c:23:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Counts *counts;
+     ^
+page.c: In function ‘page_set_total_count’:
+page.c:71:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long value = rb_fix2int(rb_value);
+     ^
+compiling counts.c
+counts.c: In function ‘counts_initialize’:
+counts.c:16:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     VALUE rb_page_size;
+     ^
+counts.c:22:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long page_size = rb_fix2int(rb_page_size);
+     ^
+counts.c: In function ‘counts_aref’:
+counts.c:70:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Counts *counts;
+     ^
+counts.c:72:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+counts.c: In function ‘counts_aset’:
+counts.c:93:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+counts.c:102:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long value = rb_fix2int(rb_value);
+     ^
+counts.c:108:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     Counts *counts;
+     ^
+counts.c: In function ‘counts_insert’:
+counts.c:143:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+counts.c:152:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long value = rb_fix2int(rb_value);
+     ^
+counts.c: In function ‘counts_delete_at_m’:
+counts.c:197:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+compiling centroids.c
+centroids.c: In function ‘centroids_initialize’:
+centroids.c:16:2: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+  VALUE rb_page_size;
+  ^
+centroids.c:21:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long page_size = rb_fix2int(rb_page_size);
+     ^
+centroids.c: In function ‘centroids_aref’:
+centroids.c:68:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+centroids.c: In function ‘centroids_aset’:
+centroids.c:92:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+centroids.c:101:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     double value = rb_float_value(rb_float);
+     ^
+centroids.c: In function ‘centroids_insert’:
+centroids.c:138:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+centroids.c:147:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     double value = rb_float_value(rb_float);
+     ^
+centroids.c: In function ‘centroids_delete_at_m’:
+centroids.c:188:5: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     long index = rb_fix2int(rb_index);
+     ^
+linking shared-object xdigest.so
+
+make "DESTDIR=" install
+/usr/bin/install -c -m 0755 xdigest.so ./.gem.20160503-14193-7soagu

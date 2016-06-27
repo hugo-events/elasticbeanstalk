@@ -1,0 +1,64 @@
+
+name: sqsd
+version: 2.3
+description: |
+    Worker Tier SQS Daemon v2.3
+
+commands:
+    CMD-SqsdDeploy:
+        refresh_manifest: true
+        stages:
+          - name: RestartSqsd
+            actions:
+            - name: RestartSqsdHook
+              type: hook
+              value: ../addons/sqsd/hooks/restart
+hooks:        
+    CMD-PreInit:
+        after:
+            - name: InstallSqsd
+              type: addon-hook
+              value: install
+
+    CMD-Startup:
+        after:
+            - name: StartSqsd
+              type: addon-hook
+              value: firstboot
+
+    CMD-SelfStartup:
+        after:
+            - name: StartSqsd
+              type: addon-hook
+              value: firstboot
+
+    CMD-AppDeploy:
+        before:
+            - name: StopSqsd
+              type: addon-hook
+              value: stop
+        after:
+            - name: StartSqsd
+              type: addon-hook
+              value: start
+
+    CMD-ConfigDeploy:
+        before:
+            - name: StopSqsd
+              type: addon-hook
+              value: stop
+        after:
+            - name: StartSqsd
+              type: addon-hook
+              value: start
+
+    CMD-RestartAppServer:
+        before:
+            - name: StopSqsd
+              type: addon-hook
+              value: stop
+        after:
+            - name: StartSqsd
+              type: addon-hook
+              value: start
+

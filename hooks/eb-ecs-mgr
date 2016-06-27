@@ -1,0 +1,217 @@
+#!/bin/bash
+#==============================================================================
+# Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Amazon Software License (the "License"). You may not use
+# this file except in compliance with the License. A copy of the License is
+# located at
+#
+#       http://aws.amazon.com/asl/
+#
+# or in the "license" file accompanying this file. This file is distributed on
+# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or
+# implied. See the License for the specific language governing permissions
+# and limitations under the License.
+#==============================================================================
+
+exec > >(gawk '{print strftime("%Y-%m-%dT%H:%M:%SZ",systime(),1), $0}' >> /var/log/eb-ecs-mgr.log 2>&1) 2>&1
+
+set -ex
+
+. /opt/elasticbeanstalk/hooks/common.sh
+
+EB_CONFIG_ECS_CLUSTER=$(/opt/elasticbeanstalk/bin/get-config container -k ecs_cluster)
+EB_CONFIG_ECS_TASK_DEF=$(/opt/elasticbeanstalk/bin/get-config container -k ecs_task_def)
+EB_CONFIG_ECS_TASK_ARN_FILE=$(/opt/elasticbeanstalk/bin/get-config container -k ecs_task_arn_file)
+EB_CONFIG_DEPLOYMENT_MANIFEST=$(/opt/elasticbeanstalk/bin/get-config container -k deployment_manifest)
+
+if [ -f "$EB_CONFIG_DEPLOYMENT_MANIFEST" ]; then
+	EB_TASK_DEF_NAME_FROM_MANIFEST=`cat "$EB_CONFIG_DEPLOYMENT_MANIFEST" | jq -r '.ECS.TaskDefinitionName | select(. != null)'`
+	EB_TASK_DEF_REVISION_FROM_MANIFEST=`cat "$EB_CONFIG_DEPLOYMENT_MANIFEST" | jq -r '.ECS.TaskDefinitionRevision | select(. != null)'`
+
+	if [ -z "$EB_TASK_DEF_NAME_FROM_MANIFEST" ] || [ -z "$EB_TASK_DEF_REVISION_FROM_MANIFEST" ]; then
+		trace "Could not determine task definition or revision from deployment manifest."
+
+		# fallback to template
+		EB_CONFIG_ECS_TASK_DEF=$(/opt/elasticbeanstalk/bin/get-config container -k ecs_task_def)
+	else
+		EB_CONFIG_ECS_TASK_DEF="$EB_TASK_DEF_NAME_FROM_MANIFEST:$EB_TASK_DEF_REVISION_FROM_MANIFEST"
+	fi
+fi
+
+if [ -z "$EB_CONFIG_ECS_CLUSTER" ] || [ -z "$EB_CONFIG_ECS_TASK_DEF" ]; then
+	error_exit "Could not determine ECS cluster or task definition." 1
+fi
+
+CMD_GET_INSTANCE_ARN='curl -sS http://localhost:51678/v1/metadata | jq -r .ContainerInstanceArn'
+CMD_GET_KNOWN_STATUS='curl -sS http://localhost:51678/v1/tasks?taskarn=$EB_CONFIG_ECS_TASK_ARN | jq -r .KnownStatus'
+CMD_DESCRIBE_INSTANCE='aws ecs describe-container-instances --cluster $EB_CONFIG_ECS_CLUSTER --container-instances $EB_CONFIG_ECS_INSTANCE_ARN 2>&1'
+
+start_ecs_task() {
+	local EB_CONFIG_ECS_INSTANCE_ARN=`eval $CMD_GET_INSTANCE_ARN`
+
+	# wait for ECS agent to register
+	local TIMEOUT=10
+	until [ -n "$EB_CONFIG_ECS_INSTANCE_ARN" ] && [ "$EB_CONFIG_ECS_INSTANCE_ARN" != "null" ]; do
+		sleep 1
+		TIMEOUT=$(( TIMEOUT - 1 ))
+		if [ $TIMEOUT -le 0 ]; then
+			error_exit "Failed to contact ECS agent." 1
+		fi
+
+		EB_CONFIG_ECS_INSTANCE_ARN=`eval $CMD_GET_INSTANCE_ARN`
+	done
+
+	set +e
+	# wait for ECS agent to connect
+	# (on restart the Agent restores state locally and may report ContainerInstanceArn before connected)
+	local ECS_RESPONSE
+	ECS_RESPONSE=`eval $CMD_DESCRIBE_INSTANCE`
+	if [ $? -ne 0 ]; then
+		error "Encountered error querying container instance status: $ECS_RESPONSE"
+
+		if echo $ECS_RESPONSE | grep -q AccessDeniedException; then
+			error "Please ensure the instance profile has ecs:DescribeContainerInstances permission."
+			touch /etc/elasticbeanstalk/.eb-ecs-start-no-retry
+		fi
+
+		exit 1
+	fi
+
+	local EB_CONFIG_ECS_AGENT_CONNECTED=`echo "$ECS_RESPONSE" | jq -r .containerInstances[0].agentConnected`
+	local TIMEOUT=20
+	until [ "$EB_CONFIG_ECS_AGENT_CONNECTED" = "true" ]; do
+		sleep 2
+		TIMEOUT=$(( TIMEOUT - 2 ))
+		if [ $TIMEOUT -le 0 ]; then
+			error_exit "Timed out waiting for ECS agent to connect." 1
+		fi
+
+		EB_CONFIG_ECS_AGENT_CONNECTED=`eval $CMD_DESCRIBE_INSTANCE | jq -r .containerInstances[0].agentConnected`
+	done
+	set -e
+
+	trace "Starting new ECS task with $EB_CONFIG_ECS_TASK_DEF."
+
+	set +e
+	local ECS_RESPONSE
+	ECS_RESPONSE=`aws ecs start-task --cluster $EB_CONFIG_ECS_CLUSTER --task-definition $EB_CONFIG_ECS_TASK_DEF --container-instances $EB_CONFIG_ECS_INSTANCE_ARN 2>&1`
+	local ECS_EXIT=$?
+	local EB_CONFIG_ECS_TASK_ARN=`echo "$ECS_RESPONSE" | jq -r .tasks[0].taskArn`
+	if [ $ECS_EXIT -ne 0 ] || [ -z "$EB_CONFIG_ECS_TASK_ARN" ] || [ "$EB_CONFIG_ECS_TASK_ARN" = "null" ]; then
+		error_exit "Encountered error starting new ECS task: $ECS_RESPONSE" 1
+	fi
+	set -e
+
+	echo $EB_CONFIG_ECS_TASK_ARN > $EB_CONFIG_ECS_TASK_ARN_FILE
+
+	local TIMEOUT=840
+	local KNOWN_STATUS=`eval $CMD_GET_KNOWN_STATUS`
+	while [ "$KNOWN_STATUS" != "RUNNING" ]; do
+		if [ -z "$KNOWN_STATUS" ] || [ "$KNOWN_STATUS" = "NONE" ] || [ "$KNOWN_STATUS" = "PENDING" ] || [ "$KNOWN_STATUS" = "CREATED" ]; then
+			sleep 3
+			TIMEOUT=$(( TIMEOUT - 3 ))
+			if [ $TIMEOUT -le 0 ]; then
+				error_exit "ECS task: $EB_CONFIG_ECS_TASK_ARN is still $KNOWN_STATUS after $TIMEOUT seconds." 1
+			fi
+		else
+			error "Failed to start ECS task: $EB_CONFIG_ECS_TASK_ARN is $KNOWN_STATUS." 1
+			# try get stopped reason from DescribeTasks
+			if [ "$KNOWN_STATUS" = "STOPPED" ]; then
+				set +e
+				ECS_RESPONSE=`aws ecs describe-tasks --cluster $EB_CONFIG_ECS_CLUSTER --tasks $EB_CONFIG_ECS_TASK_ARN 2>&1`
+				if [ $? -eq 0 ]; then
+					local TASK_STOPPED_REASON=`echo "$ECS_RESPONSE" | jq -r .tasks[0].stoppedReason`
+					local CONTAINER_STOPPED_REASONS=`echo "$ECS_RESPONSE" | jq -r '.tasks[0].containers[] | select(.lastStatus == "STOPPED") | .name + ": " + .reason'`
+					[ -n "$TASK_STOPPED_REASON" ] && error "ECS task stopped due to: $TASK_STOPPED_REASON. ($CONTAINER_STOPPED_REASONS)"
+				fi
+				set -e
+			fi
+			exit 1
+		fi
+
+		KNOWN_STATUS=`eval $CMD_GET_KNOWN_STATUS`
+	done
+
+	# capture stdout/stderr logs
+
+	for CONTAINER in `curl -sS http://localhost:51678/v1/tasks?taskarn=$EB_CONFIG_ECS_TASK_ARN | jq -r -c '.Containers[] | .DockerId + "," + .Name'`; do
+		CONTAINER_ID=`echo $CONTAINER | awk -F , '{print $1}' | cut -c 1-12`
+		CONTAINER_NAME=`echo $CONTAINER | awk -F , '{print $2}'`
+		docker logs -f $CONTAINER_ID >> "/var/log/containers/$CONTAINER_NAME-$CONTAINER_ID-stdouterr.log" 2>&1 &
+	done
+
+	trace "ECS task: $EB_CONFIG_ECS_TASK_ARN is $KNOWN_STATUS."
+}
+
+stop_ecs_task() {
+	if ! [ -f "$EB_CONFIG_ECS_TASK_ARN_FILE" ]; then
+		exit 0
+	fi
+
+	local EB_CONFIG_ECS_TASK_ARN=`cat $EB_CONFIG_ECS_TASK_ARN_FILE`
+	trace "Stopping ECS task $EB_CONFIG_ECS_TASK_ARN."
+	set +e
+	local ECS_RESPONSE
+	ECS_RESPONSE=`aws ecs stop-task --cluster $EB_CONFIG_ECS_CLUSTER --task $EB_CONFIG_ECS_TASK_ARN 2>&1`
+	if [ $? -ne 0 ]; then
+		error_exit "Encountered error stopping ECS task: $ECS_RESPONSE" 1
+	fi
+	set -e
+	
+
+	local TIMEOUT=120
+	local KNOWN_STATUS=`eval $CMD_GET_KNOWN_STATUS`
+	while [ "$KNOWN_STATUS" != "STOPPED" ] && [ "$KNOWN_STATUS" != "DEAD" ]; do
+		sleep 3
+		TIMEOUT=$(( TIMEOUT - 3 ))
+		if [ $TIMEOUT -le 0 ]; then
+			error_exit "ECS task: $EB_CONFIG_ECS_TASK_ARN is still $KNOWN_STATUS after $TIMEOUT seconds." 1
+		fi
+
+		KNOWN_STATUS=`eval $CMD_GET_KNOWN_STATUS`
+	done
+
+	trace "ECS task: $EB_CONFIG_ECS_TASK_ARN is $KNOWN_STATUS."
+
+	# ECS agent sometimes marks task as STOPPED too soon
+	# make sure all containers are gone
+	TIMEOUT=60
+	while [ "`docker ps -q | wc -l`" != "1" ]; do
+		sleep 3
+		TIMEOUT=$(( TIMEOUT - 3 ))
+		if [ $TIMEOUT -le 0 ]; then
+			error_exit "ECS task: $EB_CONFIG_ECS_TASK_ARN is $KNOWN_STATUS but containers are still running." 1
+		fi
+	done
+}
+
+# keep polling the ECS agent until ECS task is no longer running,
+# exiting from this will trigger upstart to respawn eb-ecs
+# (which in turn goes through pre-start then come back to this monitoring loop)
+monitor_ecs_task() {
+	local EB_CONFIG_ECS_TASK_ARN=`cat $EB_CONFIG_ECS_TASK_ARN_FILE`
+	set +x
+	while [ "`eval $CMD_GET_KNOWN_STATUS`" == "RUNNING" ]; do
+		sleep 5
+	done
+
+	warn "ECS task: $EB_CONFIG_ECS_TASK_ARN is no longer RUNNING."
+}
+
+case "$1" in
+	pre-start)
+		start_ecs_task
+		;;
+	start)
+		monitor_ecs_task
+		;;
+	post-stop)
+		stop_ecs_task
+		;;
+	*)
+		echo "Usage: $0 {pre-start|start|post-stop}"
+		exit 1
+esac
+
+exit $?

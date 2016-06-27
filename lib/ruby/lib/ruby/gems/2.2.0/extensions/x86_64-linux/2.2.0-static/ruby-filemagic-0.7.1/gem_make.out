@@ -1,0 +1,16 @@
+/opt/elasticbeanstalk/lib/ruby/bin/ruby -r ./siteconf20160503-14193-13ov62i.rb extconf.rb
+checking for main() in -lgnurx... no
+checking for magic_open() in -lmagic... yes
+checking for magic.h... yes
+checking for magic_version()... yes
+checking for file/patchlevel.h... no
+creating Makefile
+
+make "DESTDIR=" clean
+
+make "DESTDIR="
+compiling filemagic.c
+linking shared-object filemagic/ruby_filemagic.so
+
+make "DESTDIR=" install
+/usr/bin/install -c -m 0755 ruby_filemagic.so ./.gem.20160503-14193-e6r3hn/filemagic
